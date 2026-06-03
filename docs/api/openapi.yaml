@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: Photo Gallery API
+  version: 1.0.0
+  description: |
+    Proposed API contract for the photo gallery application.
+    The current UI is backed by mock data, and this specification documents
+    the API surface needed to support gallery browsing, uploads, and admin flows.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://example.com
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: Photos
+    description: Browse and manage photo records.
+  - name: Uploads
+    description: Submit assets for processing.
+  - name: Tags
+    description: Retrieve tag metadata for filtering.
+paths:
+  /api/photos:
+    get:
+      tags: [Photos]
+      summary: List photos
+      description: Returns paginated photos with optional search and tag filters.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - in: query
+          name: search
+          description: Match against title, photographer, or tags.
+          schema:
+            type: string
+        - in: query
+          name: tags
+          description: Comma-separated tag list.
+          schema:
+            type: string
+            example: landscape,nature
+      responses:
+        '200':
+          description: Photos returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Photos]
+      summary: Create a photo record
+      description: Upload a photo asset and store its metadata.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoCreateRequest'
+      responses:
+        '201':
+          description: Photo created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '413':
+          description: File exceeds allowed upload size.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/photos/{photoId}:
+    get:
+      tags: [Photos]
+      summary: Get a photo
+      parameters:
+        - $ref: '#/components/parameters/PhotoId'
+      responses:
+        '200':
+          description: Photo returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Photos]
+      summary: Update photo metadata
+      parameters:
+        - $ref: '#/components/parameters/PhotoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhotoUpdateRequest'
+      responses:
+        '200':
+          description: Photo updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Photos]
+      summary: Delete a photo
+      parameters:
+        - $ref: '#/components/parameters/PhotoId'
+      responses:
+        '204':
+          description: Photo deleted.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/photos/{photoId}/favorite:
+    post:
+      tags: [Photos]
+      summary: Toggle photo favorite status
+      parameters:
+        - $ref: '#/components/parameters/PhotoId'
+      responses:
+        '200':
+          description: Favorite status updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, favorited]
+                properties:
+                  id:
+                    type: string
+                  favorited:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /api/uploads:
+    post:
+      tags: [Uploads]
+      summary: Upload one or more images
+      description: Accepts gallery images for processing before photo records are published.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  minItems: 1
+                  maxItems: 10
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '202':
+          description: Upload accepted for processing.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accepted, message]
+                properties:
+                  accepted:
+                    type: integer
+                    example: 3
+                  message:
+                    type: string
+                    example: Upload queued for optimization.
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '413':
+          description: At least one file exceeds the allowed size.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tags:
+    get:
+      tags: [Tags]
+      summary: List available tags
+      responses:
+        '200':
+          description: Tags returned successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PhotoId:
+      in: path
+      name: photoId
+      required: true
+      description: Unique photo identifier.
+      schema:
+        type: string
+        example: photo_123
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 12
+  schemas:
+    Photo:
+      type: object
+      required:
+        - id
+        - url
+        - title
+        - tags
+        - likes
+        - downloads
+        - views
+      properties:
+        id:
+          type: string
+          example: photo_123
+        url:
+          type: string
+          format: uri
+          example: https://cdn.example.com/photos/photo_123.jpg
+        title:
+          type: string
+          example: Sunset Landscape
+        tags:
+          type: array
+          items:
+            type: string
+        likes:
+          type: integer
+          minimum: 0
+          example: 124
+        downloads:
+          type: integer
+          minimum: 0
+          example: 45
+        views:
+          type: integer
+          minimum: 0
+          example: 1205
+        photographer:
+          type: string
+          nullable: true
+          example: John Doe
+        dateTaken:
+          type: string
+          format: date
+          nullable: true
+        favorited:
+          type: boolean
+          default: false
+    PhotoCreateRequest:
+      type: object
+      required: [file, title]
+      properties:
+        file:
+          type: string
+          format: binary
+        title:
+          type: string
+        photographer:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        visibility:
+          type: string
+          enum: [public, private, client-review, draft]
+    PhotoUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        photographer:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        dateTaken:
+          type: string
+          format: date
+        favorited:
+          type: boolean
+    Pagination:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+    PhotoListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ErrorResponse:
+      type: object
+      required: [error, message, statusCode]
+      properties:
+        error:
+          type: string
+          example: BadRequest
+        message:
+          type: string
+          example: The request payload is invalid.
+        statusCode:
+          type: integer
+          example: 400
+        requestId:
+          type: string
+          example: req_01hxyz123abc
+  responses:
+    BadRequestError:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: Authentication is required or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

@@ -1,73 +1,71 @@
 # Photo Gallery & Portfolio
 
-A professional photo gallery and portfolio application built with Next.js 15, TypeScript, and Tailwind CSS. This project is designed for **demoing GitHub Copilot features** in a real-world, component-driven Next.js application. The included demos showcase how Copilot can assist with code generation, refactoring, UI building, and more.
+A Next.js 15 photo gallery application for showcasing photography workflows, reusable UI patterns, and GitHub Copilot demos.
+
+## Project overview
+
+This repository contains a component-driven gallery experience built with the Next.js App Router, TypeScript, React 19, and Tailwind CSS. The current implementation uses mock data to demonstrate homepage composition, gallery filtering, uploads, and an admin dashboard.
+
+## Features
+
+- Homepage with hero, feature cards, upload call-to-action, and recent gallery preview
+- Searchable and tag-filtered gallery experience
+- Drag-and-drop upload flow with simulated progress
+- Admin dashboard with stats, quick actions, and recent galleries
+- Reusable UI components exported from `src/components/ui`
+- Demo content under [`demos/`](demos/)
+
+## Requirements
+
+- Node.js 18.18+ or 20+
+- npm 9+
+
+## Quick start
+
+```bash
+git clone https://github.com/lsnoddy/copilot-intermediate-gallery-repo.git
+cd copilot-intermediate-gallery-repo
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Scripts
+
+- `npm run dev` — start the local development server
+- `npm run build` — create a production build
+- `npm run start` — serve the production build
+- `npm run lint` — run the existing lint checks
+
+## Project structure
+
+```text
+src/
+├── app/                 # Next.js 15 App Router pages and layout
+├── components/
+│   ├── gallery/         # Gallery-specific components
+│   ├── ui/              # Shared UI building blocks
+│   └── upload/          # Upload flow components
+├── lib/                 # Mock data and supporting utilities
+docs/                    # Product, API, architecture, and guide docs
+demos/                   # Copilot demo guides and examples
+```
+
+## Documentation
+
+Start with [`docs/README.md`](docs/README.md).
+
+- API: [`docs/api/openapi.yaml`](docs/api/openapi.yaml)
+- Components: [`docs/components/ui-components.md`](docs/components/ui-components.md)
+- Architecture: [`docs/architecture/overview.md`](docs/architecture/overview.md)
+- Guides: [`docs/guides/installation.md`](docs/guides/installation.md)
+- ADRs: [`docs/adr/0001-use-nextjs-15-typescript.md`](docs/adr/0001-use-nextjs-15-typescript.md)
 
 ## Demos
 
-- All demo guides and examples are in the [`demos/`](demos/) folder.
-- For more information about each demo, refer to the [README](demos/README.md) file in the `demos/` directory.
-- To get started, check out the first demo [`features-demo.md`](demos/features-demo.md) for a walkthrough of gallery features and Copilot capabilities.
+All demo guides and examples are in the [`demos/`](demos/) folder. For demo-specific walkthroughs, start with [`demos/README.md`](demos/README.md).
 
-### Creating a New Demo
+## Contributing
 
-If you want to contribute and create a new demo, follow these steps:
-
-1. Open GitHub Copilot Chat.
-2. Type the prompt `/create-copilot-demo' with an explanation of your demo idea
-3. Copilot will generate a new demo file in the `demos/` directory.
-4. Fill in remaining sections with detailed instructions, examples, and expected results.
-
-After finishing the demo, don't forget this quick follow-up:
-
-1. Add in the overview, key skills, and demo link to the [demo README](demos/README.md)
-
-## Getting Started
-
-### Technical Requirements
-
-- **Node.js** v18 or newer
-- **npm** (or yarn, pnpm, bun)
-
-### Quick Start with GitHub Codespaces
-
-The fastest way to get started is using GitHub Codespaces:
-
-1. Click the **"Code"** button on the GitHub repository page
-2. Select the **"Codespaces"** tab
-3. Click **"Create codespace on main"** (or your current branch)
-4. Wait for the codespace to build and start
-
-The codespace will automatically:
-- Install all dependencies (`npm install`)
-- Start the development server (`npm run dev`)
-- Configure GitHub Copilot and essential VS Code extensions
-- Forward port 3000 for the Next.js application
-
-Once ready, you can access the application at the forwarded port URL provided in the terminal.
-
-### Local Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/ps-copilot-sandbox/copilot-intermediate-gallery-repo.git
-   cd gallery-repo
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Project Structure
-
-```bash
-src/
-├── app/                 # Next.js 15 App Router pages
-├── components/          # Reusable React components
-├── lib/                 # Utility functions and helpers
-demos/                   # Demo guides and templates
-```
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, pull request expectations, and documentation contribution guidance.
